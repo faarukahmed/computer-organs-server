@@ -116,14 +116,20 @@ async function run(){
 
 
 
+      app.get('/order', async(req, res) =>{
+        const query = {}
+        const cursor = orderCollection.find(query)
+        const orders = await cursor.toArray()
+        res.send(orders)
+    })
 
-      app.post('/order', verifyJWT, async( req, res) =>{
+      app.post('/order', async( req, res) =>{
         const order = req.body;
         const result = await orderCollection.insertOne(order);
         res.send(result);
       })
 
-      app.get('/order', verifyJWT, async(req, res) =>{
+      app.get('/order', verifyJWT, verifyAdmin, async(req, res) =>{
         const email = req.query.email;
         const decodedEmail = req.decoded.email;
         if( email === decodedEmail){
@@ -136,7 +142,7 @@ async function run(){
         }
       })
 
-      app.patch('/order/:id', verifyJWT, async(req, res) =>{
+      app.patch('/order/:id', async(req, res) =>{
         const id  = req.params.id;
         const payment = req.body;
         const filter = {_id: ObjectId(id)};
@@ -152,14 +158,13 @@ async function run(){
         res.send(updatedOrder);
       })
 
-      app.get('/order/:id', verifyJWT,  async(req, res) =>{
+      app.get('/order/:id', async(req, res) =>{
         const id = req.params.id;
         const query = {_id: ObjectId(id)};
         const order = await orderCollection.findOne(query);
         res.send(order)
       })
-
-      app.delete('/order/:id', verifyJWT, async(req, res) =>{
+      app.delete('/order/:id', async(req, res) =>{
         const id = req.params.id;
         const query = {_id: ObjectId(id)};
         const result = await orderCollection.deleteOne(query);
